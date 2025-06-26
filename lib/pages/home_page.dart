@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stockview/main.dart';
+import 'package:stockview/network/httputils.dart';
+import 'package:stockview/stocks/stockparse.dart';
 import 'package:window_manager/window_manager.dart';
 
 class HomePage extends StatefulWidget {
@@ -39,6 +41,22 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: DragToMoveArea(child: Center()),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          final res = HttpUtil().getText(
+            "https://qt.gtimg.cn/q=sz300599,sz399001",
+          );
+          res.then((value) {
+            StockParse parse = StockParse();
+            parse.parse(value.data.toString());
+          });
+        },
+        // elevation: 10,
+        mini: true,
+        // shape: const CircleBorder(),
+        tooltip: '添加股票',
+        child: const Icon(Icons.add),
+      ),
     );
   }
 }
