@@ -4,64 +4,21 @@ v_sz300599="51~雄塑科技~300599~8.35~8.47~8.50~37514~17514~20000~8.35~595~8.3
 v_sz399001="51~深证成指~399001~10343.48~10393.72~10389.23~721001585~0~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~0.00~0~~20250626161433~-50.24~-0.48~10440.73~10340.69~10343.48/721001585/980056150362~721001585~98005615~3.04~42.97~~10440.73~10340.69~0.96~295174.73~367022.83~0.00~-1~-1~1.18~0~10391.13~~~~~~98005615.0362~0.0000~0~ ~ZS~-0.68~2.90~~~~11864.11~7908.52~1.07~3.40~-3.04~2367391930392~~-2.28~22.62~2367391930392~~~15.09~-0.01~~CNY~0~~0.00~0";
 */
 
-// 字段的索引值
-enum FieldIndex {
-  indexHeader,
-  indexName,
-  indexCode,
-  indexPrice,
-  indexLastclose,
-  indexOpen,
-  indexTotalcount,
-  indexBuy, //外盘（买入）
-  indexSale, //内盘（卖出）
-  indexBuy1,
-  indexBuyvolume1,
-  indexBuy2,
-  indexBuyvolume2,
-  indexBuy3,
-  indexBuyvolume3,
-  indexBuy4,
-  indexBuyvolume4,
-  indexBuy5,
-  indexBuyvolume5,
-  indexSale1,
-  indexSalevolume1,
-  indexSale2,
-  indexSalevolume2,
-  indexSale3,
-  indexSalevolume3,
-  indexSale4,
-  indexSalevolume4,
-  indexSale5,
-  indexSalevolume5,
-  indexLastdeal, //最近逐笔成交
-  indexTime, //包含日期的时间，20250619140814
-  indexIncrease, //涨跌
-  indexIncreaseRate, //涨跌%
-  indexHighest, //最高
-  indexLowest, //最低
-  indexPriceCountMoney, //价格/成交量（手）/成交额
-  indexCount, //成交量（手）
-  indexMoney, //成交量（万）
-}
-
-class Stock {
-  String codeEx = "";
-  String code = "";
-  List<String> datas = [];
-
-  Stock(final String data) {
-    datas = data.split("~");
-  }
-}
+import 'package:stockview/stocks/stock.dart';
 
 class StockParse {
+  final List<Stock> stocks = [];
+
+  // 解析
   void parse(final String data) {
+    stocks.clear();
+
     List<String> dataList = data.split(";");
     for (int i = 0; i < dataList.length; i++) {
-      print("第$i条记录");
-      print(dataList[i]);
+      String s = dataList[i].trim();
+      if (s.isNotEmpty) {
+        stocks.add(Stock(s));
+      }
     }
   }
 }

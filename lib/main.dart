@@ -11,7 +11,7 @@ void main() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(800, 600),
+    size: Size(500, 800),
     // center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
@@ -36,7 +36,7 @@ class StockViewApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Stock View',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepOrange),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       home: const HomePage(title: 'Stock View'),
     );

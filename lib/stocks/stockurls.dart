@@ -1,5 +1,5 @@
 // 行情地址: https://qt.gtimg.cn/q=sz300599,sz399001
-const String cUrlRealtime = "https://qt.gtimg.cn/q=%1";
+const String cUrlRealtime = "https://qt.gtimg.cn/q=";
 // 分时图: https://image.sinajs.cn/newchart/min/n/sz300599.gif?1749781312769
 const String cUrlGifMin = "https://image.sinajs.cn/newchart/min/n/%1.gif?%2";
 // 日K线图：https://image.sinajs.cn/newchart/daily/n/sh601006.gif?1749781312769
