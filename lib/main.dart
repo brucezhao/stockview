@@ -11,12 +11,13 @@ void main() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(500, 800),
+    size: Size(450, 800),
     // center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
     title: appTitle,
+    windowButtonVisibility: false,
   );
   windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.show();

@@ -1,8 +1,4 @@
 // 封装网络操作
-
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:flutter_gbk2utf8/flutter_gbk2utf8.dart';
 import 'package:http/http.dart' as http;
 // import 'dart:ui';

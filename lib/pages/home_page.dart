@@ -16,7 +16,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  static const double appBarIconSize = 18;
+  // static const double appBarIconSize = 18;
   final StockParse parse = StockParse();
   final List<String> stockCodes = [
     "sh000001", // 沪
@@ -25,8 +25,13 @@ class _HomePageState extends State<HomePage> {
     "sz002581",
     "sh600380",
     "sz300599",
+    "sz000737",
+    "sh605277",
+    "sh600519",
+    "sh600036",
   ];
   List<Stock> stocks = [];
+  int currentIndex = -1;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +40,10 @@ class _HomePageState extends State<HomePage> {
         preferredSize: const Size.fromHeight(kWindowCaptionHeight + 10),
         child: DragToMoveArea(
           child: AppBar(
+            leading: IconButton(
+              onPressed: () {},
+              icon: Icon(Icons.menu, size: 22, color: Colors.grey.shade800),
+            ),
             title: Text(
               appTitle,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -52,30 +61,48 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            //Row(children: []),
-            stockIndexsWidget(),
-            ListView.separated(
+      body: Column(
+        children: [
+          stockIndexsWidget(),
+          // const Divider(height: 5, color: Colors.black12),
+          Expanded(
+            child: ListView.separated(
               itemBuilder: (context, index) {
                 if (stocks.length <= index + 3) {
                   return Container();
                 }
-                return stocks[index + 3].briefWidget();
+                return stocks[index + 3].briefWidget(index == currentIndex, () {
+                  setState(() {
+                    currentIndex = index;
+                  });
+                  showStockDetail(index + 3);
+                });
               },
               separatorBuilder: (context, index) {
                 return Divider(color: Colors.transparent, height: 0);
               },
               itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
             ),
-          ],
-        ),
+          ),
+          // const Divider(height: 5, color: Colors.black12),
+          // Container(
+          //   height: 300,
+          //   width: double.infinity,
+          //   margin: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
+          //   child: Card(
+          //     color: Colors.white,
+          //     child: stocks.length > 3
+          //         ? stocks[currentIndex + 3].detailWidget()
+          //         : null,
+          //   ),
+          // ),
+        ],
       ),
+      // ),
       // DragToMoveArea(child: Center()),
       floatingActionButton: FloatingActionButton(
+        // mini: true,
         onPressed: () async {
           stocks = await getStocks(stockCodes);
           setState(() {});
@@ -110,18 +137,15 @@ class _HomePageState extends State<HomePage> {
 
     return Container(
       height: 70,
-      // color: Colors.yellow,
       alignment: Alignment.center,
-      child: Expanded(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            stockIndexWidget(0),
-            stockIndexWidget(1),
-            stockIndexWidget(2),
-          ],
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          stockIndexWidget(0),
+          stockIndexWidget(1),
+          stockIndexWidget(2),
+        ],
       ),
     );
   }
@@ -139,30 +163,48 @@ class _HomePageState extends State<HomePage> {
     String increaseRate = stock.getData(FieldIndex.indexIncreaseRate.index);
     increaseRate = "${stock.increase >= 0 ? "+" : ""}$increaseRate%";
 
-    return Container(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            stock.getData(FieldIndex.indexPrice.index),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: stock.color,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          stock.getData(FieldIndex.indexPrice.index),
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: stock.color,
+          ),
+        ),
+        Row(
+          children: [
+            Text(name, style: TextStyle(fontSize: 13)),
+            const SizedBox(width: 5),
+            Text(
+              increaseRate,
+              style: TextStyle(color: stock.color, fontSize: 13),
             ),
-          ),
-          Row(
-            children: [
-              Text(name, style: TextStyle(fontSize: 13)),
-              const SizedBox(width: 5),
-              Text(
-                increaseRate,
-                style: TextStyle(color: stock.color, fontSize: 13),
-              ),
-            ],
-          ),
-        ],
-      ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void showStockDetail(int index) {
+    if (index < 0 || index >= stocks.length) {
+      return;
+    }
+    final stock = stocks[index];
+
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          height: 400,
+          width: double.infinity,
+          margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
+          child: stock
+              .detailWidget(), //Card(color: Colors.white, child: stock.detailWidget()),
+        );
+      },
     );
   }
 }

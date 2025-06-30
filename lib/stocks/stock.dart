@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:stockview/stocks/stockurls.dart';
 
 // 字段的索引值
 enum FieldIndex {
@@ -98,7 +99,7 @@ class Stock {
     return 0.0;
   }
 
-  Widget briefWidget() {
+  Widget briefWidget(bool selected, final VoidCallback? onTap) {
     String sIncreaseRate = getData(FieldIndex.indexIncreaseRate.index);
     sIncreaseRate = "${increase >= 0 ? "+" : ""}$sIncreaseRate%";
     String sIncrease = getData(FieldIndex.indexIncreaseRate.index);
@@ -106,11 +107,12 @@ class Stock {
 
     return Container(
       height: 74,
-      // decoration: BoxDecoration(border: Border.all(color: Colors.black12)),
+
       margin: const EdgeInsets.only(left: 5, right: 5),
       child: Card(
-        color: Colors.white,
+        color: selected ? Colors.orange.shade100 : Colors.white,
         child: ListTile(
+          onTap: onTap,
           title: Text(
             getData(FieldIndex.indexName.index),
             style: TextStyle(
@@ -127,7 +129,7 @@ class Stock {
               color: Colors.grey.shade800,
             ),
           ),
-          trailing: Container(
+          trailing: SizedBox(
             width: 260,
             height: 70,
             child: Row(
@@ -151,6 +153,39 @@ class Stock {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget detailWidget() {
+    String url = "$codeEx.gif?${DateTime.now().millisecondsSinceEpoch}";
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        children: [
+          Container(height: 60, width: double.infinity),
+          TabBar(
+            tabs: [
+              Tab(text: "分时图"),
+              Tab(text: "日K图"),
+            ],
+          ),
+          Expanded(
+            // child: Column(
+            //   children: [
+
+            //     Expanded(
+            child: TabBarView(
+              children: [
+                Image.network("$cUrlGifMin$url"),
+                Image.network("$cUrlGifDay$url"),
+              ],
+            ),
+          ),
+          // ],
+
+          // ),
+        ],
       ),
     );
   }
