@@ -4,3 +4,7 @@ const String cUrlRealtime = "https://qt.gtimg.cn/q=";
 const String cUrlGifMin = "https://image.sinajs.cn/newchart/min/n/";
 // 日K线图：https://image.sinajs.cn/newchart/daily/n/sh601006.gif?1749781312769
 const String cUrlGifDay = "https://image.sinajs.cn/newchart/daily/n/";
+// 周K线图： https://image.sinajs.cn/newchart/weekly/n/sh000001.gif
+const String cUrlGifWeek = "https://image.sinajs.cn/newchart/weekly/n/";
+// 月K线图：https://image.sinajs.cn/newchart/monthly/n/sh000001.gif
+const String cUrlGifMonth = "https://image.sinajs.cn/newchart/monthly/n/";

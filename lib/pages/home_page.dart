@@ -25,10 +25,6 @@ class _HomePageState extends State<HomePage> {
     "sz002581",
     "sh600380",
     "sz300599",
-    "sz000737",
-    "sh605277",
-    "sh600519",
-    "sh600036",
   ];
   List<Stock> stocks = [];
   int currentIndex = -1;
