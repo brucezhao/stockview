@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:stockview/utils/systray.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'pages/home_page.dart';
 
 const String appTitle = "股票查看器 v1.0";
+// SysTray sysTray = SysTray();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,6 +40,7 @@ class StockViewApp extends StatelessWidget {
       title: 'Stock View',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        fontFamily: "MiSans",
       ),
       home: const HomePage(title: 'Stock View'),
     );

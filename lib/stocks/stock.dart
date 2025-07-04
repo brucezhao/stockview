@@ -96,6 +96,7 @@ class Stock {
 
   String codeEx = "";
   String code = "";
+  double openPrice = 0.0;
   double increase = 0.0;
   List<String> datas = [];
 
@@ -108,6 +109,7 @@ class Stock {
     code = datas[FieldIndex.indexCode.index];
     codeEx = datas[FieldIndex.indexHeader.index].substring(2, 10);
     increase = getDoubleData(FieldIndex.indexIncrease.index);
+    openPrice = getDoubleData(FieldIndex.indexOpen.index);
   }
 
   // 股票颜色
@@ -149,15 +151,18 @@ class Stock {
   Widget briefWidget(bool selected, final VoidCallback? onTap) {
     String sIncreaseRate = getData(FieldIndex.indexIncreaseRate.index);
     sIncreaseRate = "${increase >= 0 ? "+" : ""}$sIncreaseRate%";
-    String sIncrease = getData(FieldIndex.indexIncreaseRate.index);
-    sIncrease = "${increase >= 0 ? "+" : ""}$sIncrease%";
+    String sIncrease = getData(FieldIndex.indexIncrease.index);
+    sIncrease = "${increase >= 0 ? "+" : ""}$sIncrease";
 
     return Container(
       height: 74,
 
       margin: const EdgeInsets.only(left: 5, right: 5),
       child: Card(
-        color: selected ? Colors.orange.shade100 : Colors.white,
+        color: Colors.white,
+        // color: selected
+        //     ? const Color.fromARGB(255, 253, 241, 223)
+        //     : Colors.white,
         child: ListTile(
           onTap: onTap,
           title: Text(
@@ -208,9 +213,31 @@ class Stock {
     String url = "$codeEx.gif?${DateTime.now().millisecondsSinceEpoch}";
     final textStye = TextStyle(fontSize: 13);
     final String prePlus = increase >= 0 ? "+" : "";
+    // 市值
+    double dTotleValue = getDoubleData(FieldIndex.indexTotalValue.index);
+    String sTotleValueunit = "亿";
+    if (dTotleValue > 10000) {
+      dTotleValue /= 10000;
+      sTotleValueunit = "万亿";
+    }
+    // 成交量
+    double dDealCount = getDoubleData(FieldIndex.indexCount.index) / 10000;
+    String sDealCountunit = "万";
+    if (dDealCount > 10000) {
+      dDealCount /= 10000;
+      sDealCountunit = "亿";
+    }
+
+    // 成交额
+    double dDealVolume = getDoubleData(FieldIndex.indexMoney.index) / 10000;
+    String sDealVolume = "亿";
+    if (dDealVolume > 1000) {
+      dDealVolume /= 10000;
+      sDealVolume = "万亿";
+    }
 
     return DefaultTabController(
-      length: 5,
+      length: 4,
       child: Column(
         children: [
           Container(
@@ -268,11 +295,11 @@ class Stock {
                   style: textStye,
                 ),
                 Text(
-                  "市值 ${getData(FieldIndex.indexTotalValue.index)}亿",
+                  "市值 ${dTotleValue.toStringAsFixed(2)}$sTotleValueunit",
                   style: textStye,
                 ),
                 Text(
-                  "成交量 ${(getDoubleData(FieldIndex.indexCount.index) / 10000).toStringAsFixed(2)}万",
+                  "成交量 ${dDealCount.toStringAsFixed(2)}$sDealCountunit",
                   style: textStye,
                 ),
                 Text(
@@ -288,7 +315,7 @@ class Stock {
                   style: textStye,
                 ),
                 Text(
-                  "成交额 ${(getDoubleData(FieldIndex.indexMoney.index) / 10000).toStringAsFixed(2)}亿",
+                  "成交额 ${dDealVolume.toStringAsFixed(2)}$sDealVolume",
                   style: textStye,
                 ),
               ],
@@ -297,7 +324,6 @@ class Stock {
           const Divider(height: 2, color: Colors.black12),
           TabBar(
             tabs: [
-              Tab(text: "交易"),
               Tab(text: "分时"),
               Tab(text: "日K"),
               Tab(text: "周K"),
@@ -308,142 +334,77 @@ class Stock {
             child: TabBarView(
               children: [
                 Container(
-                  // height: double.infinity,
-                  // alignment: Alignment.center,
-                  margin: const EdgeInsets.only(top: 20),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    // crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Container(width: 100, height: 100, color: Colors.amber),
-                      SizedBox(
-                        width: 150,
-                        child: GridView.count(
-                          crossAxisCount: 3,
-                          childAspectRatio: 1.5,
-                          children: [
-                            Text("卖5", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexSale5.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexSaleVolume5.index),
-                              style: textStye,
-                            ),
-                            Text("卖4", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexSale4.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexSaleVolume4.index),
-                              style: textStye,
-                            ),
-                            Text("卖3", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexSale3.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexSaleVolume3.index),
-                              style: textStye,
-                            ),
-                            Text("卖2", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexSale2.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexSaleVolume2.index),
-                              style: textStye,
-                            ),
-                            Text("卖1", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexSale1.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexSaleVolume1.index),
-                              style: textStye,
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(
-                        width: 150,
-                        child: GridView.count(
-                          crossAxisCount: 3,
-                          childAspectRatio: 1.5,
-                          children: [
-                            Text("买1", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexBuy1.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexBuyVolume1.index),
-                              style: textStye,
-                            ),
-                            Text("买2", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexBuy2.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexBuyVolume2.index),
-                              style: textStye,
-                            ),
-                            Text("买3", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexBuy3.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexBuyVolume3.index),
-                              style: textStye,
-                            ),
-                            Text("买4", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexBuy4.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexBuyVolume4.index),
-                              style: textStye,
-                            ),
-                            Text("买5", style: textStye),
-                            Text(
-                              getData(FieldIndex.indexBuy5.index),
-                              style: textStye,
-                            ),
-                            Text(
-                              getData(FieldIndex.indexBuyVolume5.index),
-                              style: textStye,
-                            ),
-                          ],
+                      Expanded(
+                        child: Container(
+                          height: double.infinity,
+                          child: Image.network(
+                            "$cUrlGifMin$url",
+                            fit: BoxFit.fill,
+                          ),
                         ),
                       ),
 
-                      //   GridView.count(
-                      //     crossAxisCount: 3,
-                      //     children: [
-                      //       Text("买5", style: textStye),
-                      //       Text("买4", style: textStye),
-                      //       Text("买3", style: textStye),
-                      //       Text("买2", style: textStye),
-                      //       Text("买1", style: textStye),
-                      //     ],
-                      //   ),
+                      Container(
+                        alignment: Alignment.center,
+                        width: 110,
+                        height: double.infinity,
+                        margin: const EdgeInsets.only(
+                          left: 5,
+                          top: 5,
+                          right: 5,
+                        ),
+                        child: GridView.count(
+                          crossAxisCount: 3,
+                          childAspectRatio: 1.6,
+                          children: [
+                            Text("卖5", style: textStye),
+                            priceText(FieldIndex.indexSale5),
+                            volumeText(FieldIndex.indexSaleVolume5),
+                            Text("卖4", style: textStye),
+                            priceText(FieldIndex.indexSale4),
+                            volumeText(FieldIndex.indexSaleVolume4),
+                            Text("卖3", style: textStye),
+                            priceText(FieldIndex.indexSale3),
+                            volumeText(FieldIndex.indexSaleVolume3),
+                            Text("卖2", style: textStye),
+                            priceText(FieldIndex.indexSale2),
+                            volumeText(FieldIndex.indexSaleVolume2),
+                            Text("卖1", style: textStye),
+                            priceText(FieldIndex.indexSale1),
+                            volumeText(FieldIndex.indexSaleVolume1),
+                            // const Divider(height: 1, color: Colors.black12),
+                            Text("买1", style: textStye),
+                            priceText(FieldIndex.indexBuy1),
+                            volumeText(FieldIndex.indexBuyVolume1),
+                            Text("买2", style: textStye),
+                            priceText(FieldIndex.indexBuy2),
+                            volumeText(FieldIndex.indexBuyVolume2),
+                            Text("买3", style: textStye),
+                            priceText(FieldIndex.indexBuy3),
+                            volumeText(FieldIndex.indexBuyVolume3),
+                            Text("买4", style: textStye),
+                            priceText(FieldIndex.indexBuy4),
+                            volumeText(FieldIndex.indexBuyVolume4),
+                            Text("买5", style: textStye),
+                            priceText(FieldIndex.indexBuy5),
+                            volumeText(FieldIndex.indexBuyVolume5),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-
-                // ),
-                Image.network("$cUrlGifMin$url"),
-                Image.network("$cUrlGifDay$url"),
-                Image.network("$cUrlGifWeek$url"),
-                Image.network("$cUrlGifMonth$url"),
+                Container(
+                  child: Image.network("$cUrlGifDay$url", fit: BoxFit.fill),
+                ),
+                Container(
+                  child: Image.network("$cUrlGifWeek$url", fit: BoxFit.fill),
+                ),
+                Container(
+                  child: Image.network("$cUrlGifMonth$url", fit: BoxFit.fill),
+                ),
               ],
             ),
           ),
@@ -458,5 +419,37 @@ class Stock {
         "${sDate.substring(0, 4)}-${sDate.substring(4, 6)}-${sDate.substring(6, 8)} "
         "${sDate.substring(8, 10)}:${sDate.substring(10, 12)}:${sDate.substring(12, 14)}";
     return s;
+  }
+
+  Text priceText(FieldIndex index) {
+    Color color = Colors.black;
+    double tempPrice = getDoubleData(index.index);
+
+    if (tempPrice == 0.0) {
+      return Text("--", style: TextStyle(fontSize: 13, color: color));
+    }
+
+    if (tempPrice > openPrice) {
+      color = Colors.red;
+    } else if (tempPrice < openPrice) {
+      color = Colors.green;
+    }
+    return Text(
+      getData(index.index),
+      style: TextStyle(fontSize: 12, color: color),
+    );
+  }
+
+  Text volumeText(FieldIndex index) {
+    String s = getData(index.index);
+    if (s == "0") {
+      s = "--";
+    }
+
+    return Text(
+      s,
+      style: const TextStyle(fontSize: 12),
+      textAlign: TextAlign.right,
+    );
   }
 }
