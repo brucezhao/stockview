@@ -20,7 +20,7 @@ class SysTray {
   SysTray(this.title);
 
   void init() async {
-    await _systemTray.initSystemTray(title: title, iconPath: defaultIcon);
+    await _systemTray.initSystemTray(iconPath: defaultIcon);
     // await _systemTray.setTitle(title);
 
     await _menu.buildFrom([
@@ -60,5 +60,18 @@ class SysTray {
 
   void _hideApp() async {
     await _appWindow.hide();
+  }
+
+  void up() async {
+    // await _systemTray.setTitle(title);
+    await _systemTray.setImage(iconUp);
+  }
+
+  void down() async {
+    await _systemTray.setImage(iconDown);
+  }
+
+  void setTitle(String title) async {
+    await _systemTray.setTitle(title);
   }
 }

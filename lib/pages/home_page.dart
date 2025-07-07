@@ -8,9 +8,10 @@ import 'package:stockview/network/httputils.dart';
 import 'package:stockview/stocks/stock.dart';
 import 'package:stockview/stocks/stockparse.dart';
 import 'package:stockview/stocks/stockurls.dart';
-import 'package:system_tray/system_tray.dart';
+// import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../utils/data_saver.dart';
 import '../utils/systray.dart';
 
 class HomePage extends StatefulWidget {
@@ -37,8 +38,10 @@ class _HomePageState extends State<HomePage> {
   int currentIndex = -1;
   // 定时器
   Timer? timer;
+  bool isGettingStock = false;
 
   SysTray sysTray = SysTray(appTitle);
+  DataSaver dataSaver = DataSaver();
 
   // 启动定时器
   void startTimer() {
@@ -48,6 +51,14 @@ class _HomePageState extends State<HomePage> {
       if (tempStocks.isNotEmpty) {
         stocks.clear();
         stocks.addAll(tempStocks);
+
+        // 取沪指，后面可以自定义指数
+        final stock = stocks[0];
+        if (stock.increase >= 0) {
+          sysTray.up();
+        } else {
+          sysTray.down();
+        }
       }
 
       setState(() {});
@@ -62,6 +73,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    loadData();
 
     startTimer();
     sysTray.init();
@@ -126,45 +138,52 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () => windowManager.minimize(),
               ),
               // WindowCaptionButton.maximize(),
-              WindowCaptionButton.close(
-                onPressed: () => windowManager.destroy(),
-              ),
+              WindowCaptionButton.close(onPressed: () => windowManager.hide()),
             ],
             centerTitle: false,
           ),
         ),
       ),
-      body: Column(
-        children: [
-          stockIndexsWidget(),
-          Expanded(
-            child: ListView.separated(
-              itemBuilder: (context, index) {
-                if (stocks.length <= index + 3) {
-                  return Container();
-                }
-                return stocks[index + 3].briefWidget(index == currentIndex, () {
-                  setState(() {
-                    currentIndex = index;
-                  });
-                  showStockDetail(index + 3);
-                });
-              },
-              separatorBuilder: (context, index) {
-                return Divider(color: Colors.transparent, height: 0);
-              },
-              itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
-              shrinkWrap: true,
-            ),
-          ),
-        ],
+      body: FutureBuilder(
+        future: loadData(),
+        builder: (context, snapshot) {
+          return Column(
+            children: [
+              stockIndexsWidget(),
+              Expanded(
+                child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    if (stocks.length <= index + 3) {
+                      return Container();
+                    }
+                    return stocks[index + 3].briefWidget(
+                      index == currentIndex,
+                      () {
+                        setState(() {
+                          currentIndex = index;
+                        });
+                        showStockDetail(index + 3);
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return Divider(color: Colors.transparent, height: 0);
+                  },
+                  itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
+                  shrinkWrap: true,
+                ),
+              ),
+            ],
+          );
+        },
       ),
       // ),
       // DragToMoveArea(child: Center()),
       floatingActionButton: FloatingActionButton(
         // mini: true,
         onPressed: () async {
-          setState(() {});
+          sysTray.setTitle("添加股票");
+          //setState(() {});
         },
         shape: const CircleBorder(),
         tooltip: '添加股票',
@@ -174,19 +193,34 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<List<Stock>> getStocks(List<String> codes) async {
-    List<Stock> stocks = [];
-    if (codes.isEmpty) {
-      return stocks;
+    if (isGettingStock) {
+      return [];
     }
+    // setState(() {});
+    isGettingStock = true;
+    List<Stock> tempStocks = [];
+    String datas = "";
 
-    String sStocks = codes.join(",");
-    final res = await HttpUtil().getText("$cUrlRealtime$sStocks");
-    if (res.code == 0) {
-      parse.parse(res.data.toString());
-      stocks = parse.stocks;
+    try {
+      if (codes.isEmpty) {
+        return [];
+      }
+
+      String sStocks = codes.join(",");
+      final res = await HttpUtil().getText("$cUrlRealtime$sStocks");
+      if (res.code == 0) {
+        datas = res.data.toString();
+        dataSaver.saveStockDatas(datas);
+
+        parse.parse(res.data.toString());
+        tempStocks = parse.stocks;
+      }
+    } finally {
+      isGettingStock = false;
     }
+    // setState(() {});
 
-    return stocks;
+    return tempStocks;
   }
 
   Widget stockIndexsWidget() {
@@ -268,5 +302,21 @@ class _HomePageState extends State<HomePage> {
         );
       },
     );
+  }
+
+  Future<bool> loadData() async {
+    final codes = await dataSaver.loadStockCodes();
+    if (codes.isNotEmpty) {
+      stockCodes.clear();
+      stockCodes.addAll(codes);
+    }
+
+    final datas = await dataSaver.loadStockDatas();
+    if (datas.isNotEmpty) {
+      stocks.clear();
+      stocks.addAll(datas);
+    }
+
+    return true;
   }
 }
