@@ -8,3 +8,6 @@ const String cUrlGifDay = "https://image.sinajs.cn/newchart/daily/n/";
 const String cUrlGifWeek = "https://image.sinajs.cn/newchart/weekly/n/";
 // 月K线图：https://image.sinajs.cn/newchart/monthly/n/sh000001.gif
 const String cUrlGifMonth = "https://image.sinajs.cn/newchart/monthly/n/";
+// 5分钟数据图
+const String cUrlFiveMin =
+    "https://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.getKLineData";

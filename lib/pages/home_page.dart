@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:stockview/main.dart';
 import 'package:stockview/network/httputils.dart';
+import 'package:stockview/stocks/five_min_data.dart';
 import 'package:stockview/stocks/stock.dart';
 import 'package:stockview/stocks/stockparse.dart';
 import 'package:stockview/stocks/stockurls.dart';
@@ -182,7 +183,9 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         // mini: true,
         onPressed: () async {
-          sysTray.setTitle("添加股票");
+          FiveMinDatas fmd = FiveMinDatas("sz300599");
+          // String s = await fmd.getDatas();
+          // print(s);
           //setState(() {});
         },
         shape: const CircleBorder(),

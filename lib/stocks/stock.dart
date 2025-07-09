@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:stockview/stocks/five_min_data.dart';
 import 'package:stockview/stocks/stockurls.dart';
+
+import 'price_chart.dart';
 // 以 ~ 分割字符串中内容，下标从0开始，依次为
 //  0: 未知
 //  1: 名字
@@ -96,9 +99,11 @@ class Stock {
 
   String codeEx = "";
   String code = "";
-  double openPrice = 0.0;
+  double price = 0.0;
+  double lastClosePrice = 0.0;
   double increase = 0.0;
   List<String> datas = [];
+  late FiveMinDatas fiveMinDatas;
 
   Stock(final String data) {
     datas = data.split("~");
@@ -108,8 +113,11 @@ class Stock {
 
     code = datas[FieldIndex.indexCode.index];
     codeEx = datas[FieldIndex.indexHeader.index].substring(2, 10);
+    price = getDoubleData(FieldIndex.indexPrice.index);
     increase = getDoubleData(FieldIndex.indexIncrease.index);
-    openPrice = getDoubleData(FieldIndex.indexOpen.index);
+    lastClosePrice = getDoubleData(FieldIndex.indexLastclose.index);
+
+    fiveMinDatas = FiveMinDatas(codeEx);
   }
 
   // 股票颜色
@@ -182,11 +190,35 @@ class Stock {
             ),
           ),
           trailing: SizedBox(
-            width: 260,
+            width: 300,
             height: 70,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
+                FutureBuilder(
+                  future: fiveMinDatas.getDatas(price),
+                  builder: (context, snapshot) {
+                    Widget res = Container(
+                      width: 60,
+                      height: 50,
+                      // color: Colors.amber,
+                    );
+
+                    if (snapshot.connectionState == ConnectionState.done &&
+                        !snapshot.hasError &&
+                        snapshot.hasData) {
+                      final List<double> prices = snapshot.data as List<double>;
+                      if (prices.isNotEmpty) {
+                        res = CustomPaint(
+                          size: const Size(80, 60),
+                          painter: PriceChart(prices, color),
+                        );
+                      }
+                    }
+
+                    return res;
+                  },
+                ),
                 Text(
                   getData(FieldIndex.indexPrice.index),
                   style: TextStyle(fontSize: 18, color: color),
@@ -429,9 +461,9 @@ class Stock {
       return Text("--", style: TextStyle(fontSize: 13, color: color));
     }
 
-    if (tempPrice > openPrice) {
+    if (tempPrice > lastClosePrice) {
       color = Colors.red;
-    } else if (tempPrice < openPrice) {
+    } else if (tempPrice < lastClosePrice) {
       color = Colors.green;
     }
     return Text(
