@@ -25,7 +25,7 @@ class SysTray {
 
     await _menu.buildFrom([
       MenuItemLabel(label: 'Show', onClicked: (menuItem) => _showApp()),
-      MenuItemLabel(label: 'Hide', onClicked: (menuItem) => _appWindow.hide()),
+      MenuItemLabel(label: 'Hide', onClicked: (menuItem) => _hideApp()),
       MenuItemLabel(label: 'Exit', onClicked: (menuItem) => _appWindow.close()),
     ]);
 

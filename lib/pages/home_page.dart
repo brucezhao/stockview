@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -36,6 +35,9 @@ class _HomePageState extends State<HomePage> {
     "sz300599",
   ];
   List<Stock> stocks = [];
+  // 保存每支股票对应的5分钟数据
+  late FiveMinDatasManager fiveMinDatasManager;
+  // 当前选中的股票
   int currentIndex = -1;
   // 定时器
   Timer? timer;
@@ -43,15 +45,24 @@ class _HomePageState extends State<HomePage> {
 
   SysTray sysTray = SysTray(appTitle);
   DataSaver dataSaver = DataSaver();
+  bool isLoaded = false; // 是否已经读入数据
 
   // 启动定时器
   void startTimer() {
-    timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+    timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       List<Stock> tempStocks = await getStocks(stockCodes);
 
       if (tempStocks.isNotEmpty) {
         stocks.clear();
         stocks.addAll(tempStocks);
+
+        // 将数据添加到5分钟曲线中
+        for (int i = 0; i < stocks.length; i++) {
+          fiveMinDatasManager.addStock(stocks[i]);
+          stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
+            stocks[i].codeEx,
+          );
+        }
 
         // 取沪指，后面可以自定义指数
         final stock = stocks[0];
@@ -75,6 +86,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadData();
+
+    fiveMinDatasManager = FiveMinDatasManager(stockCodes);
+    fiveMinDatasManager.init();
 
     startTimer();
     sysTray.init();
@@ -195,11 +209,11 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // 获取股票实时数据
   Future<List<Stock>> getStocks(List<String> codes) async {
     if (isGettingStock) {
       return [];
     }
-    // setState(() {});
     isGettingStock = true;
     List<Stock> tempStocks = [];
     String datas = "";
@@ -221,10 +235,12 @@ class _HomePageState extends State<HomePage> {
     } finally {
       isGettingStock = false;
     }
-    // setState(() {});
 
     return tempStocks;
   }
+
+  // 获取股票的5分钟数据
+  void getFiveMinData() async {}
 
   Widget stockIndexsWidget() {
     if (stocks.isEmpty) {
@@ -308,6 +324,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> loadData() async {
+    if (isLoaded) {
+      return true;
+    }
+    isLoaded = true;
+
     final codes = await dataSaver.loadStockCodes();
     if (codes.isNotEmpty) {
       stockCodes.clear();

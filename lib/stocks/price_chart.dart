@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 class PriceChart extends CustomPainter {
   final List<double> prices;
   final Color color;
-  final double maxPrice;
-  final double minPrice;
+  double maxPrice = 0.0;
+  double minPrice = 0.0;
 
-  PriceChart(this.prices, this.color)
-    : maxPrice = prices.reduce((a, b) => a > b ? a : b),
+  PriceChart(this.prices, this.color) {
+    if (prices.isNotEmpty) {
+      maxPrice = prices.reduce((a, b) => a > b ? a : b);
       minPrice = prices.reduce((a, b) => a < b ? a : b);
+    }
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -24,7 +27,7 @@ class PriceChart extends CustomPainter {
     final path = Path();
 
     // Calculate scaling factors
-    final double xUnit = size.width / (prices.length - 1);
+    final double xUnit = size.width / (48 - 1);
     final double yUnit;
     if (maxPrice == minPrice) {
       yUnit = 0;

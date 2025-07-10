@@ -195,7 +195,7 @@ class Stock {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                FutureBuilder(
+                /*FutureBuilder(
                   future: fiveMinDatas.getDatas(price),
                   builder: (context, snapshot) {
                     Widget res = Container(
@@ -218,7 +218,12 @@ class Stock {
 
                     return res;
                   },
+                ),*/
+                CustomPaint(
+                  size: const Size(50, 30),
+                  painter: PriceChart(fiveMinDatas.toDoubleList(price), color),
                 ),
+
                 Text(
                   getData(FieldIndex.indexPrice.index),
                   style: TextStyle(fontSize: 18, color: color),
