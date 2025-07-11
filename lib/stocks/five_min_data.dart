@@ -92,12 +92,16 @@ class FiveMinDatas {
     if (datas.isEmpty) return;
 
     DateTime now = DateTime.now();
-    int time = now.hour * 100 + now.minute;
-    if (time < 930 || time > 1530) {
+    if (!marketTimezone.inTrading(now)) {
       return;
     }
 
-    time = stock.getIntData(FieldIndex.indexTime.index); //20250619140814
+    // int time = now.hour * 100 + now.minute;
+    // if (time < 930 || time > 1530) {
+    //   return;
+    // }
+
+    int time = stock.getIntData(FieldIndex.indexTime.index); //20250619140814
     time = time % 1000000 ~/ 100; // 小时+分钟=1408
 
     if (time <= datas[datas.length - 1].time) {
@@ -105,6 +109,7 @@ class FiveMinDatas {
       datas[datas.length - 1].close = stock.price;
     } else {
       // 新增一条纪录
+      time = datas[datas.length - 1].time;
       DateTime now = DateTime.now();
       DateTime dt = DateTime(
         now.year,
@@ -114,7 +119,7 @@ class FiveMinDatas {
         time % 100,
       );
       // 时间加5分钟
-      dt.add(const Duration(minutes: 5));
+      dt = dt.add(const Duration(minutes: 5));
       FiveMinData data = FiveMinData();
       data.time = dt.hour * 100 + dt.minute;
       data.close = stock.price;
@@ -147,7 +152,7 @@ class FiveMinDatas {
   }
 */
   // price为当前价格
-  List<double> toDoubleList(double price) {
+  List<double> toDoubleList() {
     final List<double> prices = [];
 
     if (datas.isEmpty) {

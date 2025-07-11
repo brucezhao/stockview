@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:stockview/main.dart';
 import 'package:stockview/network/httputils.dart';
 import 'package:stockview/stocks/five_min_data.dart';
+import 'package:stockview/stocks/market_timezone.dart';
 import 'package:stockview/stocks/stock.dart';
 import 'package:stockview/stocks/stockparse.dart';
 import 'package:stockview/stocks/stockurls.dart';
 // import 'package:system_tray/system_tray.dart';
 import 'package:window_manager/window_manager.dart';
 
+import '../stocks/price_chart.dart';
 import '../utils/data_saver.dart';
 import '../utils/systray.dart';
 
@@ -45,33 +47,36 @@ class _HomePageState extends State<HomePage> {
 
   SysTray sysTray = SysTray(appTitle);
   DataSaver dataSaver = DataSaver();
-  bool isLoaded = false; // 是否已经读入数据
+  // bool isLoaded = false; // 是否已经读入数据
 
   // 启动定时器
   void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      List<Stock> tempStocks = await getStocks(stockCodes);
+      if (!marketTimezone.inTrading(DateTime.now())) return;
 
-      if (tempStocks.isNotEmpty) {
-        stocks.clear();
-        stocks.addAll(tempStocks);
+      // List<Stock> tempStocks =
+      // await getStocks(stockCodes);
 
-        // 将数据添加到5分钟曲线中
-        for (int i = 0; i < stocks.length; i++) {
-          fiveMinDatasManager.addStock(stocks[i]);
-          stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
-            stocks[i].codeEx,
-          );
-        }
+      // if (tempStocks.isNotEmpty) {
+      //   stocks.clear();
+      //   stocks.addAll(tempStocks);
 
-        // 取沪指，后面可以自定义指数
-        final stock = stocks[0];
-        if (stock.increase >= 0) {
-          sysTray.up();
-        } else {
-          sysTray.down();
-        }
-      }
+      //   // 将数据添加到5分钟曲线中
+      //   for (int i = 0; i < stocks.length; i++) {
+      //     fiveMinDatasManager.addStock(stocks[i]);
+      //     stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
+      //       stocks[i].codeEx,
+      //     );
+      //   }
+
+      //   // 取沪指，后面可以自定义指数
+      //   final stock = stocks[0];
+      //   if (stock.increase >= 0) {
+      //     sysTray.up();
+      //   } else {
+      //     sysTray.down();
+      //   }
+      // }
 
       setState(() {});
     });
@@ -86,6 +91,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadData();
+    // getStocks(stockCodes);
 
     fiveMinDatasManager = FiveMinDatasManager(stockCodes);
     fiveMinDatasManager.init();
@@ -160,7 +166,7 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: FutureBuilder(
-        future: loadData(),
+        future: getStocks(stockCodes),
         builder: (context, snapshot) {
           return Column(
             children: [
@@ -216,7 +222,7 @@ class _HomePageState extends State<HomePage> {
     }
     isGettingStock = true;
     List<Stock> tempStocks = [];
-    String datas = "";
+    // String datas = "";
 
     try {
       if (codes.isEmpty) {
@@ -226,8 +232,8 @@ class _HomePageState extends State<HomePage> {
       String sStocks = codes.join(",");
       final res = await HttpUtil().getText("$cUrlRealtime$sStocks");
       if (res.code == 0) {
-        datas = res.data.toString();
-        dataSaver.saveStockDatas(datas);
+        // datas = res.data.toString();
+        // dataSaver.saveStockDatas(datas);
 
         parse.parse(res.data.toString());
         tempStocks = parse.stocks;
@@ -236,7 +242,28 @@ class _HomePageState extends State<HomePage> {
       isGettingStock = false;
     }
 
-    return tempStocks;
+    if (tempStocks.isNotEmpty) {
+      stocks.clear();
+      stocks.addAll(tempStocks);
+
+      // 将数据添加到5分钟曲线中
+      for (int i = 0; i < stocks.length; i++) {
+        fiveMinDatasManager.addStock(stocks[i]);
+        stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
+          stocks[i].codeEx,
+        );
+      }
+
+      // 取沪指，后面可以自定义指数
+      final stock = stocks[0];
+      if (stock.increase >= 0) {
+        sysTray.up();
+      } else {
+        sysTray.down();
+      }
+    }
+
+    return stocks;
   }
 
   // 获取股票的5分钟数据
@@ -277,26 +304,34 @@ class _HomePageState extends State<HomePage> {
 
     return GestureDetector(
       onTap: () => showStockDetail(index),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      child: Row(
         children: [
-          Text(
-            stock.getData(FieldIndex.indexPrice.index),
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: stock.color,
-            ),
-          ),
-          Row(
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(name, style: TextStyle(fontSize: 13)),
-              const SizedBox(width: 5),
               Text(
-                increaseRate,
-                style: TextStyle(color: stock.color, fontSize: 13),
+                stock.getData(FieldIndex.indexPrice.index),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: stock.color,
+                ),
+              ),
+              Row(
+                children: [
+                  Text(name, style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 5),
+                  Text(
+                    increaseRate,
+                    style: TextStyle(color: stock.color, fontSize: 13),
+                  ),
+                ],
               ),
             ],
+          ),
+          CustomPaint(
+            size: const Size(50, 20),
+            painter: PriceChart(stock.fiveMinDatas.toDoubleList(), stock.color),
           ),
         ],
       ),
@@ -324,10 +359,10 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> loadData() async {
-    if (isLoaded) {
-      return true;
-    }
-    isLoaded = true;
+    // if (isLoaded) {
+    //   return true;
+    // }
+    // isLoaded = true;
 
     final codes = await dataSaver.loadStockCodes();
     if (codes.isNotEmpty) {
@@ -335,11 +370,11 @@ class _HomePageState extends State<HomePage> {
       stockCodes.addAll(codes);
     }
 
-    final datas = await dataSaver.loadStockDatas();
-    if (datas.isNotEmpty) {
-      stocks.clear();
-      stocks.addAll(datas);
-    }
+    // final datas = await dataSaver.loadStockDatas();
+    // if (datas.isNotEmpty) {
+    //   stocks.clear();
+    //   stocks.addAll(datas);
+    // }
 
     return true;
   }
