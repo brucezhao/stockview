@@ -32,9 +32,9 @@ class _HomePageState extends State<HomePage> {
     "sh000001", // 沪
     "sz399001", // 深
     "sz399006", // 创
-    "sz002581",
-    "sh600380",
-    "sz300599",
+    // "sz002581",
+    // "sh600380",
+    // "sz300599",
   ];
   List<Stock> stocks = [];
   // 保存每支股票对应的5分钟数据
@@ -52,33 +52,9 @@ class _HomePageState extends State<HomePage> {
   // 启动定时器
   void startTimer() {
     timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
-      if (!marketTimezone.inTrading(DateTime.now())) return;
-
-      // List<Stock> tempStocks =
-      // await getStocks(stockCodes);
-
-      // if (tempStocks.isNotEmpty) {
-      //   stocks.clear();
-      //   stocks.addAll(tempStocks);
-
-      //   // 将数据添加到5分钟曲线中
-      //   for (int i = 0; i < stocks.length; i++) {
-      //     fiveMinDatasManager.addStock(stocks[i]);
-      //     stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
-      //       stocks[i].codeEx,
-      //     );
-      //   }
-
-      //   // 取沪指，后面可以自定义指数
-      //   final stock = stocks[0];
-      //   if (stock.increase >= 0) {
-      //     sysTray.up();
-      //   } else {
-      //     sysTray.down();
-      //   }
-      // }
-
       setState(() {});
+
+      if (!marketTimezone.inTrading(DateTime.now())) return;
     });
   }
 
@@ -105,39 +81,6 @@ class _HomePageState extends State<HomePage> {
     stopTimer();
     super.dispose();
   }
-
-  // void initTray() async {
-  //   String path = Platform.isWindows
-  //       ? 'assets/app_icon.ico'
-  //       : 'assets/images/icons/main_up.png';
-
-  //   final AppWindow appWindow = AppWindow();
-  //   final SystemTray systemTray = SystemTray();
-
-  //   // We first init the systray menu
-  //   await systemTray.initSystemTray(title: "system tray", iconPath: path);
-
-  //   // create context menu
-  //   final Menu menu = Menu();
-  //   await menu.buildFrom([
-  //     MenuItemLabel(label: 'Show', onClicked: (menuItem) => appWindow.show()),
-  //     MenuItemLabel(label: 'Hide', onClicked: (menuItem) => appWindow.hide()),
-  //     MenuItemLabel(label: 'Exit', onClicked: (menuItem) => appWindow.close()),
-  //   ]);
-
-  //   // set context menu
-  //   await systemTray.setContextMenu(menu);
-
-  //   // handle system tray event
-  //   systemTray.registerSystemTrayEventHandler((eventName) {
-  //     debugPrint("eventName: $eventName");
-  //     if (eventName == kSystemTrayEventClick) {
-  //       Platform.isWindows ? appWindow.show() : systemTray.popUpContextMenu();
-  //     } else if (eventName == kSystemTrayEventRightClick) {
-  //       Platform.isWindows ? systemTray.popUpContextMenu() : appWindow.show();
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -203,10 +146,8 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: FloatingActionButton(
         // mini: true,
         onPressed: () async {
-          FiveMinDatas fmd = FiveMinDatas("sz300599");
-          // String s = await fmd.getDatas();
-          // print(s);
-          //setState(() {});
+          await addStock();
+          setState(() {});
         },
         shape: const CircleBorder(),
         tooltip: '添加股票',
@@ -265,9 +206,6 @@ class _HomePageState extends State<HomePage> {
 
     return stocks;
   }
-
-  // 获取股票的5分钟数据
-  void getFiveMinData() async {}
 
   Widget stockIndexsWidget() {
     if (stocks.isEmpty) {
@@ -359,23 +297,72 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<bool> loadData() async {
-    // if (isLoaded) {
-    //   return true;
-    // }
-    // isLoaded = true;
-
     final codes = await dataSaver.loadStockCodes();
     if (codes.isNotEmpty) {
       stockCodes.clear();
       stockCodes.addAll(codes);
     }
 
-    // final datas = await dataSaver.loadStockDatas();
-    // if (datas.isNotEmpty) {
-    //   stocks.clear();
-    //   stocks.addAll(datas);
-    // }
-
     return true;
+  }
+
+  // 添加股票
+  final TextEditingController _controller = TextEditingController();
+  Future<void> addStock() async {
+    _controller.clear();
+
+    String? res = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("添加股票"),
+          content: Container(
+            child: TextField(
+              controller: _controller,
+              decoration: InputDecoration(hintText: "sh/sz+股票代码"),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(""),
+              child: const Text("取消"),
+            ),
+            TextButton(
+              onPressed: () {
+                String res = "";
+                if (stockCodes.contains(_controller.text)) {
+                  res = "已存在该股票";
+                } else {
+                  stockCodes.add(_controller.text);
+                  dataSaver.saveStockCodes(stockCodes);
+                  res = "添加成功";
+                }
+
+                Navigator.of(context).pop(res);
+              },
+              child: const Text("确定"),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (res != null && res.isNotEmpty) {
+      showSnackBar(res);
+    }
+  }
+
+  // 删除股票
+  Future removeStock() async {}
+
+  // 显示snackbar
+  void showSnackBar(String text) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(text),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
   }
 }
