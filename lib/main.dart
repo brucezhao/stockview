@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:stockview/utils/systray.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'pages/home_page.dart';
@@ -13,7 +12,7 @@ void main() async {
   await windowManager.ensureInitialized();
 
   WindowOptions windowOptions = WindowOptions(
-    size: Size(450, 800),
+    size: Size(600, 600),
     // center: true,
     backgroundColor: Colors.transparent,
     skipTaskbar: false,

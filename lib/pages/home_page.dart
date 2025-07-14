@@ -54,7 +54,7 @@ class _HomePageState extends State<HomePage> {
     timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
       setState(() {});
 
-      if (!marketTimezone.inTrading(DateTime.now())) return;
+      // if (!marketTimezone.inTrading(DateTime.now())) return;
     });
   }
 
@@ -89,10 +89,10 @@ class _HomePageState extends State<HomePage> {
         preferredSize: const Size.fromHeight(kWindowCaptionHeight + 10),
         child: DragToMoveArea(
           child: AppBar(
-            leading: IconButton(
-              onPressed: () {},
-              icon: Icon(Icons.menu, size: 22, color: Colors.grey.shade800),
-            ),
+            // leading: IconButton(
+            //   onPressed: () {},
+            //   icon: Icon(Icons.menu, size: 22, color: Colors.grey.shade800),
+            // ),
             title: Text(
               appTitle,
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -108,51 +108,24 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: FutureBuilder(
-        future: getStocks(stockCodes),
-        builder: (context, snapshot) {
-          return Column(
-            children: [
-              stockIndexsWidget(),
-              Expanded(
-                child: ListView.separated(
-                  itemBuilder: (context, index) {
-                    if (stocks.length <= index + 3) {
-                      return Container();
-                    }
-                    return stocks[index + 3].briefWidget(
-                      index == currentIndex,
-                      () {
-                        setState(() {
-                          currentIndex = index;
-                        });
-                        showStockDetail(index + 3);
-                      },
-                    );
-                  },
-                  separatorBuilder: (context, index) {
-                    return Divider(color: Colors.transparent, height: 0);
-                  },
-                  itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
-                  shrinkWrap: true,
-                ),
-              ),
-            ],
-          );
-        },
+      body: Row(
+        children: [
+          leftNavigatorBar(),
+          Expanded(child: mainArea()),
+        ],
       ),
       // ),
       // DragToMoveArea(child: Center()),
-      floatingActionButton: FloatingActionButton(
-        // mini: true,
-        onPressed: () async {
-          await addStock();
-          setState(() {});
-        },
-        shape: const CircleBorder(),
-        tooltip: '添加股票',
-        child: const Icon(Icons.add),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   // mini: true,
+      //   onPressed: () async {
+      //     await addStock();
+      //     setState(() {});
+      //   },
+      //   shape: const CircleBorder(),
+      //   tooltip: '添加股票',
+      //   child: const Icon(Icons.add),
+      // ),
     );
   }
 
@@ -189,7 +162,9 @@ class _HomePageState extends State<HomePage> {
 
       // 将数据添加到5分钟曲线中
       for (int i = 0; i < stocks.length; i++) {
-        fiveMinDatasManager.addStock(stocks[i]);
+        if (marketTimezone.inTrading(DateTime.now())) {
+          fiveMinDatasManager.addStock(stocks[i]);
+        }
         stocks[i].fiveMinDatas = fiveMinDatasManager.fiveMinDatas(
           stocks[i].codeEx,
         );
@@ -287,8 +262,8 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          height: 400,
-          width: double.infinity,
+          height: 450,
+          width: 450, //double.infinity,
           margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
           child: stock
               .detailWidget(), //Card(color: Colors.white, child: stock.detailWidget()),
@@ -320,11 +295,9 @@ class _HomePageState extends State<HomePage> {
       builder: (context) {
         return AlertDialog(
           title: const Text("添加股票"),
-          content: Container(
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(hintText: "sh/sz+股票代码"),
-            ),
+          content: TextField(
+            controller: _controller,
+            decoration: InputDecoration(hintText: "sh/sz+股票代码"),
           ),
           actions: [
             TextButton(
@@ -357,7 +330,87 @@ class _HomePageState extends State<HomePage> {
   }
 
   // 删除股票
-  Future removeStock() async {}
+  Future removeStock() async {
+    // Map<String, String> _stocks = {};
+
+    final List<String> _codes = [];
+    final List<String> _name = [];
+    final List<bool> _selected = [];
+
+    for (int i = 0; i < stocks.length; i++) {
+      _codes.add(stocks[i].codeEx);
+      _name.add(stocks[i].getData(FieldIndex.indexName.index));
+      _selected.add(false);
+    }
+    for (final code in stockCodes) {
+      if (!_codes.contains(code)) {
+        _codes.add(code);
+        _name.add("");
+        _selected.add(false);
+      }
+    }
+
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("删除股票"),
+          content: StatefulBuilder(
+            builder: (context, setState) {
+              return SizedBox(
+                height: 250,
+                width: 350,
+                child: ListView.separated(
+                  itemBuilder: (context, index) {
+                    final String code = _codes[index];
+                    final String name = _name[index];
+
+                    return CheckboxListTile(
+                      value: _selected[index],
+                      title: Text("$code($name)"),
+                      onChanged: (value) {
+                        _selected[index] = !_selected[index];
+                        setState(() {});
+                      },
+                    );
+                  },
+                  separatorBuilder: (context, index) {
+                    return const Divider();
+                  },
+                  itemCount: _codes.length,
+                  // shrinkWrap: true,
+                ),
+              );
+            },
+          ),
+
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(""),
+              child: const Text("取消"),
+            ),
+            TextButton(
+              onPressed: () {
+                int count = 0;
+                for (int i = 0; i < _selected.length; i++) {
+                  if (_selected[i]) {
+                    stockCodes.remove(_codes[i]);
+                    count++;
+                  }
+                }
+                if (count > 0) {
+                  dataSaver.saveStockCodes(stockCodes);
+                }
+                showSnackBar("删除了$count支股票");
+                Navigator.of(context).pop();
+              },
+              child: const Text("确定"),
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   // 显示snackbar
   void showSnackBar(String text) {
@@ -367,6 +420,87 @@ class _HomePageState extends State<HomePage> {
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
+    );
+  }
+
+  // 左侧导航栏
+  Widget leftNavigatorBar() {
+    return NavigationRail(
+      destinations: [
+        NavigationRailDestination(
+          icon: const Icon(Icons.home),
+          label: Text("首页"),
+        ),
+        NavigationRailDestination(
+          icon: const Icon(Icons.add),
+          label: Text("添加"),
+        ),
+        NavigationRailDestination(
+          icon: const Icon(Icons.delete_outline),
+          label: Text("删除"),
+        ),
+      ],
+      trailing: Expanded(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.end, // 将按钮放置在底部
+          children: [
+            IconButton(
+              icon: const Icon(Icons.settings_outlined),
+              onPressed: () {},
+            ),
+            SizedBox(height: 10), // 添加间距
+            IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
+            SizedBox(height: 15), // 添加间距
+          ],
+        ),
+      ),
+
+      selectedIndex: 0,
+      onDestinationSelected: (value) {
+        if (value == 1) {
+          addStock();
+        } else if (value == 2) {
+          removeStock();
+        }
+      },
+    );
+  }
+
+  // 主要工作区
+  Widget mainArea() {
+    return FutureBuilder(
+      future: getStocks(stockCodes),
+      builder: (context, snapshot) {
+        return Column(
+          children: [
+            stockIndexsWidget(),
+            Expanded(
+              child: ListView.separated(
+                itemBuilder: (context, index) {
+                  if (stocks.length <= index + 3) {
+                    return Container();
+                  }
+                  return stocks[index + 3].briefWidget(
+                    index == currentIndex,
+                    () {
+                      setState(() {
+                        currentIndex = index;
+                      });
+                      showStockDetail(index + 3);
+                    },
+                  );
+                },
+                separatorBuilder: (context, index) {
+                  return Divider(color: Colors.transparent, height: 0);
+                },
+                itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
+                shrinkWrap: true,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
