@@ -69,8 +69,8 @@ class _HomePageState extends State<HomePage> {
     loadData();
     // getStocks(stockCodes);
 
-    fiveMinDatasManager = FiveMinDatasManager(stockCodes);
-    fiveMinDatasManager.init();
+    // fiveMinDatasManager = FiveMinDatasManager(stockCodes);
+    // fiveMinDatasManager.init();
 
     startTimer();
     sysTray.init();
@@ -267,6 +267,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
+          const SizedBox(width: 5),
           CustomPaint(
             size: const Size(50, 20),
             painter: PriceChart(stock.fiveMinDatas.toDoubleList(), stock.color),
@@ -302,6 +303,9 @@ class _HomePageState extends State<HomePage> {
       stockCodes.clear();
       stockCodes.addAll(codes);
     }
+
+    fiveMinDatasManager = FiveMinDatasManager(stockCodes);
+    fiveMinDatasManager.init();
 
     return true;
   }
