@@ -167,10 +167,10 @@ class Stock {
 
       margin: const EdgeInsets.only(left: 5, right: 5),
       child: Card(
-        color: Colors.white,
-        // color: selected
-        //     ? const Color.fromARGB(255, 253, 241, 223)
-        //     : Colors.white,
+        // color: Colors.white,
+        color: selected
+            ? const Color.fromARGB(255, 253, 241, 223)
+            : Colors.white,
         child: ListTile(
           onTap: onTap,
           title: Text(

@@ -44,6 +44,8 @@ class _HomePageState extends State<HomePage> {
   // 定时器
   Timer? timer;
   bool isGettingStock = false;
+  // 界面折叠
+  bool isFold = true;
 
   SysTray sysTray = SysTray(appTitle);
   DataSaver dataSaver = DataSaver();
@@ -109,9 +111,13 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
       body: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           leftNavigatorBar(),
+          const VerticalDivider(width: 1),
           Expanded(child: mainArea()),
+          const VerticalDivider(width: 1),
+          detailArea(),
         ],
       ),
       // ),
@@ -252,24 +258,33 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void showStockDetail(int index) {
+  void showStockDetail(int index) async {
     if (index < 0 || index >= stocks.length) {
       return;
     }
-    final stock = stocks[index];
 
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return Container(
-          height: 450,
-          width: 450, //double.infinity,
-          margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
-          child: stock
-              .detailWidget(), //Card(color: Colors.white, child: stock.detailWidget()),
-        );
-      },
-    );
+    currentIndex = index;
+
+    Size size = await windowManager.getSize();
+    if (isFold) {
+      windowManager.setSize(Size(size.width + 450, size.height), animate: true);
+      isFold = false;
+    }
+
+    // final stock = stocks[index];
+
+    // showModalBottomSheet(
+    //   context: context,
+    //   builder: (BuildContext context) {
+    //     return Container(
+    //       height: 450,
+    //       width: 450, //double.infinity,
+    //       margin: const EdgeInsets.only(top: 5, left: 5, right: 5, bottom: 5),
+    //       child: stock
+    //           .detailWidget(), //Card(color: Colors.white, child: stock.detailWidget()),
+    //     );
+    //   },
+    // );
   }
 
   Future<bool> loadData() async {
@@ -426,10 +441,12 @@ class _HomePageState extends State<HomePage> {
   // 左侧导航栏
   Widget leftNavigatorBar() {
     return NavigationRail(
+      // elevation: 0,
       destinations: [
         NavigationRailDestination(
           icon: const Icon(Icons.home),
           label: Text("首页"),
+          indicatorShape: CircleBorder(),
         ),
         NavigationRailDestination(
           icon: const Icon(Icons.add),
@@ -482,7 +499,7 @@ class _HomePageState extends State<HomePage> {
                     return Container();
                   }
                   return stocks[index + 3].briefWidget(
-                    index == currentIndex,
+                    index + 3 == currentIndex,
                     () {
                       setState(() {
                         currentIndex = index;
@@ -501,6 +518,53 @@ class _HomePageState extends State<HomePage> {
           ],
         );
       },
+    );
+  }
+
+  Widget detailArea() {
+    if (currentIndex < 0 || currentIndex >= stocks.length) {
+      return SizedBox(width: 0, height: 400);
+    }
+
+    Stock stock = stocks[currentIndex];
+    return Container(
+      width: isFold ? 0 : 450,
+      height: 450,
+      alignment: Alignment.topCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 42,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: () async {
+                    Size size = await windowManager.getSize();
+                    windowManager.setSize(
+                      Size(size.width - 450, size.height),
+                      animate: true,
+                    );
+                    setState(() {
+                      isFold = true;
+                    });
+                  },
+                  icon: Icon(Icons.navigate_before, size: 32),
+                ),
+                const SizedBox(width: 10),
+                Text(
+                  stock.getData(FieldIndex.indexName.index),
+                  style: TextStyle(fontSize: 24),
+                ),
+                const SizedBox(width: 10),
+                Text(stock.code, style: TextStyle(fontSize: 18)),
+              ],
+            ),
+          ),
+          Expanded(child: stocks[currentIndex].detailWidget()),
+        ],
+      ),
     );
   }
 }
