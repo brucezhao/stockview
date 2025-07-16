@@ -196,7 +196,9 @@ class FiveMinDatasManager {
   }
 
   void addStock(Stock stock) {
-    _datas[stock.codeEx]!.addStockPrice(stock);
+    if (marketTimezone.inTrading(DateTime.now())) {
+      _datas[stock.codeEx]!.addStockPrice(stock);
+    }
   }
 
   FiveMinDatas fiveMinDatas(String code) {

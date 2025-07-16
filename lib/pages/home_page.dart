@@ -222,7 +222,20 @@ class _HomePageState extends State<HomePage> {
     increaseRate = "${stock.increase >= 0 ? "+" : ""}$increaseRate%";
 
     return GestureDetector(
-      onTap: () => showStockDetail(index),
+      onTap: () async {
+        if (currentIndex == index) {
+          currentIndex = -1;
+          isFold = true;
+          Size size = await windowManager.getSize();
+          windowManager.setSize(
+            Size(size.width - 450, size.height),
+            animate: true,
+          );
+          setState(() {});
+        } else {
+          showStockDetail(index);
+        }
+      },
       child: Row(
         children: [
           Column(
@@ -270,6 +283,7 @@ class _HomePageState extends State<HomePage> {
       windowManager.setSize(Size(size.width + 450, size.height), animate: true);
       isFold = false;
     }
+    setState(() {});
 
     // final stock = stocks[index];
 
@@ -440,48 +454,79 @@ class _HomePageState extends State<HomePage> {
 
   // 左侧导航栏
   Widget leftNavigatorBar() {
-    return NavigationRail(
-      // elevation: 0,
-      destinations: [
-        NavigationRailDestination(
-          icon: const Icon(Icons.home),
-          label: Text("首页"),
-          indicatorShape: CircleBorder(),
-        ),
-        NavigationRailDestination(
-          icon: const Icon(Icons.add),
-          label: Text("添加"),
-        ),
-        NavigationRailDestination(
-          icon: const Icon(Icons.delete_outline),
-          label: Text("删除"),
-        ),
-      ],
-      trailing: Expanded(
-        child: Column(
-          mainAxisSize: MainAxisSize.max,
-          mainAxisAlignment: MainAxisAlignment.end, // 将按钮放置在底部
-          children: [
-            IconButton(
-              icon: const Icon(Icons.settings_outlined),
-              onPressed: () {},
-            ),
-            SizedBox(height: 10), // 添加间距
-            IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
-            SizedBox(height: 15), // 添加间距
-          ],
-        ),
+    return Container(
+      width: 60,
+      height: double.infinity,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 10), // 添加间距
+          IconButton(
+            icon: const Icon(Icons.search),
+            onPressed: () {
+              addStock();
+            },
+          ),
+          SizedBox(height: 10), // 添加间距
+          IconButton(
+            icon: const Icon(Icons.delete_outline),
+            onPressed: () {
+              removeStock();
+            },
+          ),
+          const Spacer(),
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () {},
+          ),
+          SizedBox(height: 10), // 添加间距
+          IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
+          SizedBox(height: 15), // 添加间距
+        ],
       ),
-
-      selectedIndex: 0,
-      onDestinationSelected: (value) {
-        if (value == 1) {
-          addStock();
-        } else if (value == 2) {
-          removeStock();
-        }
-      },
     );
+    // return NavigationRail(
+    //   // elevation: 0,
+    //   destinations: [
+    //     NavigationRailDestination(
+    //       icon: const Icon(Icons.home),
+    //       label: Text("首页"),
+    //       indicatorShape: CircleBorder(),
+    //     ),
+    //     NavigationRailDestination(
+    //       icon: const Icon(Icons.add),
+    //       label: Text("添加"),
+    //     ),
+    //     NavigationRailDestination(
+    //       icon: const Icon(Icons.delete_outline),
+    //       label: Text("删除"),
+    //     ),
+    //   ],
+    //   trailing: Expanded(
+    //     child: Column(
+    //       mainAxisSize: MainAxisSize.max,
+    //       mainAxisAlignment: MainAxisAlignment.end, // 将按钮放置在底部
+    //       children: [
+    // IconButton(
+    //   icon: const Icon(Icons.settings_outlined),
+    //   onPressed: () {},
+    // ),
+    // SizedBox(height: 10), // 添加间距
+    // IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
+    // SizedBox(height: 15), // 添加间距
+    //       ],
+    //     ),
+    //   ),
+
+    //   selectedIndex: 0,
+    //   onDestinationSelected: (value) {
+    //     if (value == 1) {
+    //       addStock();
+    //     } else if (value == 2) {
+    //       removeStock();
+    //     }
+    //   },
+    // );
   }
 
   // 主要工作区
@@ -495,16 +540,29 @@ class _HomePageState extends State<HomePage> {
             Expanded(
               child: ListView.separated(
                 itemBuilder: (context, index) {
-                  if (stocks.length <= index + 3) {
+                  int stockIndex = index + 3;
+                  if (stocks.length <= stockIndex) {
                     return Container();
                   }
-                  return stocks[index + 3].briefWidget(
-                    index + 3 == currentIndex,
-                    () {
-                      setState(() {
+                  bool isCurrent = stockIndex == currentIndex;
+
+                  return stocks[stockIndex].briefWidget(
+                    //index + 3 == currentIndex,
+                    isCurrent,
+                    () async {
+                      if (isCurrent) {
+                        currentIndex = -1;
+                        isFold = true;
+                        Size size = await windowManager.getSize();
+                        windowManager.setSize(
+                          Size(size.width - 450, size.height),
+                          animate: true,
+                        );
+                      } else {
                         currentIndex = index;
-                      });
-                      showStockDetail(index + 3);
+                        showStockDetail(index + 3);
+                      }
+                      setState(() {});
                     },
                   );
                 },

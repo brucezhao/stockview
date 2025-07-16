@@ -169,75 +169,62 @@ class Stock {
       child: Card(
         // color: Colors.white,
         color: selected
-            ? const Color.fromARGB(255, 253, 241, 223)
+            ? const Color.fromARGB(255, 227, 243, 243)
             : Colors.white,
-        child: ListTile(
-          onTap: onTap,
-          title: Text(
-            getData(FieldIndex.indexName.index),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: Colors.grey.shade800,
+        child: Container(
+          decoration: BoxDecoration(
+            border: Border(
+              left: BorderSide(
+                width: 4,
+                color: selected ? Colors.orange : Colors.transparent,
+              ),
             ),
+            borderRadius: BorderRadius.circular(5),
           ),
-          subtitle: Text(
-            getData(FieldIndex.indexCode.index),
-            style: TextStyle(
-              fontWeight: FontWeight.normal,
-              fontSize: 16,
-              color: Colors.grey.shade800,
+          child: ListTile(
+            onTap: onTap,
+            title: Text(
+              getData(FieldIndex.indexName.index),
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: Colors.grey.shade800,
+              ),
             ),
-          ),
-          trailing: SizedBox(
-            width: 300,
-            height: 70,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                /*FutureBuilder(
-                  future: fiveMinDatas.getDatas(price),
-                  builder: (context, snapshot) {
-                    Widget res = Container(
-                      width: 60,
-                      height: 50,
-                      // color: Colors.amber,
-                    );
-
-                    if (snapshot.connectionState == ConnectionState.done &&
-                        !snapshot.hasError &&
-                        snapshot.hasData) {
-                      final List<double> prices = snapshot.data as List<double>;
-                      if (prices.isNotEmpty) {
-                        res = CustomPaint(
-                          size: const Size(80, 60),
-                          painter: PriceChart(prices, color),
-                        );
-                      }
-                    }
-
-                    return res;
-                  },
-                ),*/
-                CustomPaint(
-                  size: const Size(50, 30),
-                  painter: PriceChart(fiveMinDatas.toDoubleList(), color),
-                ),
-                Text(
-                  getData(FieldIndex.indexPrice.index),
-                  style: TextStyle(fontSize: 18, color: color),
-                ),
-                Text(
-                  sIncreaseRate,
-                  // getData(FieldIndex.indexIncreaseRate.index),
-                  style: TextStyle(fontSize: 18, color: color),
-                ),
-                Text(
-                  sIncrease,
-                  // getData(FieldIndex.indexIncrease.index),
-                  style: TextStyle(fontSize: 18, color: color),
-                ),
-              ],
+            subtitle: Text(
+              getData(FieldIndex.indexCode.index),
+              style: TextStyle(
+                fontWeight: FontWeight.normal,
+                fontSize: 16,
+                color: Colors.grey.shade800,
+              ),
+            ),
+            trailing: SizedBox(
+              width: 300,
+              height: 70,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  CustomPaint(
+                    size: const Size(50, 30),
+                    painter: PriceChart(fiveMinDatas.toDoubleList(), color),
+                  ),
+                  Text(
+                    getData(FieldIndex.indexPrice.index),
+                    style: TextStyle(fontSize: 18, color: color),
+                  ),
+                  Text(
+                    sIncreaseRate,
+                    // getData(FieldIndex.indexIncreaseRate.index),
+                    style: TextStyle(fontSize: 18, color: color),
+                  ),
+                  Text(
+                    sIncrease,
+                    // getData(FieldIndex.indexIncrease.index),
+                    style: TextStyle(fontSize: 18, color: color),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
