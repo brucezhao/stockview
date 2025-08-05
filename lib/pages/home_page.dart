@@ -481,6 +481,13 @@ class _HomePageState extends State<HomePage> {
           ),
           SizedBox(height: 10), // 添加间距
           IconButton(icon: const Icon(Icons.info_outline), onPressed: () {}),
+          SizedBox(height: 10), // 添加间距
+          IconButton(
+            icon: const Icon(Icons.exit_to_app),
+            onPressed: () {
+              windowManager.close();
+            },
+          ),
           SizedBox(height: 15), // 添加间距
         ],
       ),
