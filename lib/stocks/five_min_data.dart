@@ -19,7 +19,7 @@ http://money.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_MarketData.ge
 import 'dart:convert';
 
 // import 'package:flutter/material.dart';
-import 'package:flutter/material.dart';
+// import 'package:flutter/material.dart';
 import 'package:stockview/stocks/market_timezone.dart';
 
 import '../network/httputils.dart';
@@ -96,10 +96,7 @@ class FiveMinDatas {
       return;
     }
 
-    // int time = now.hour * 100 + now.minute;
-    // if (time < 930 || time > 1530) {
-    //   return;
-    // }
+    // print("addStockPrice: ${stock.codeEx} - $now");
 
     int time = stock.getIntData(FieldIndex.indexTime.index); //20250619140814
     time = time % 1000000 ~/ 100; // 小时+分钟=1408
@@ -109,48 +106,27 @@ class FiveMinDatas {
       datas[datas.length - 1].close = stock.price;
     } else {
       // 新增一条纪录
-      time = datas[datas.length - 1].time;
-      DateTime now = DateTime.now();
-      DateTime dt = DateTime(
-        now.year,
-        now.month,
-        now.day,
-        time ~/ 100,
-        time % 100,
-      );
-      // 时间加5分钟
-      dt = dt.add(const Duration(minutes: 5));
+      // time = datas[datas.length - 1].time;
+      // DateTime now = DateTime.now();
+      // DateTime dt = DateTime(
+      //   now.year,
+      //   now.month,
+      //   now.day,
+      //   time ~/ 100,
+      //   time % 100,
+      // );
+      // // 时间加5分钟
+      // dt = dt.add(const Duration(minutes: 5));
+      DateTime dt = DateTime.now().add(const Duration(minutes: 5));
       FiveMinData data = FiveMinData();
       data.time = dt.hour * 100 + dt.minute;
       data.close = stock.price;
       datas.add(data);
+
+      // print("addStockPrice: ${stock.codeEx} - $now: time=$time - $data");
     }
   }
 
-  /*
-  Future<List<double>> getDatas(double price) async {
-    DateTime now = DateTime.now();
-    int count = marketTimezone.count(now);
-    int day = now.year * 10000 + now.month * 100 + now.day;
-
-    String sUrl = "$cUrlFiveMin?symbol=$code&scale=5&ma=no&datalen=$count";
-    final res = await HttpUtil().getText(sUrl);
-    if (res.code == 0) {
-      // 将sData转换为json格式
-      List<dynamic> json = jsonDecode(res.data);
-      datas.clear();
-      for (var item in json) {
-        FiveMinData data = FiveMinData.fromJson(item);
-        if (data.day == day) {
-          datas.add(data);
-        }
-      }
-    }
-
-    final prices = toDoubleList(price);
-    return prices;
-  }
-*/
   // price为当前价格
   List<double> toDoubleList() {
     final List<double> prices = [];
@@ -163,17 +139,6 @@ class FiveMinDatas {
     for (int i = 1; i < datas.length; i++) {
       prices.add(datas[i].close);
     }
-
-    /*DateTime now = DateTime.now();
-    int time = now.hour * 100 + now.minute;
-    if (time >= 930 && time <= 1530) {
-      // 在交易时间段内
-      int iCount = datas.length;
-      if (time < datas[iCount - 1].time) {
-        // 如果当前时间在数据的最后一个时间之前，则修改最后的数据
-        prices[prices.length - 1] = price;
-      }
-    }*/
 
     return prices;
   }
@@ -196,9 +161,9 @@ class FiveMinDatasManager {
   }
 
   void addStock(Stock stock) {
-    if (marketTimezone.inTrading(DateTime.now())) {
-      _datas[stock.codeEx]!.addStockPrice(stock);
-    }
+    // if (marketTimezone.inTrading(DateTime.now())) {
+    _datas[stock.codeEx]!.addStockPrice(stock);
+    // }
   }
 
   FiveMinDatas fiveMinDatas(String code) {
