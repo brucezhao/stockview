@@ -156,18 +156,20 @@ class Stock {
     return 0.0;
   }
 
-  Widget briefWidget(bool selected, final VoidCallback? onTap) {
+  Widget briefWidget(bool selected, int index, final VoidCallback? onTap) {
     String sIncreaseRate = getData(FieldIndex.indexIncreaseRate.index);
     sIncreaseRate = "${increase >= 0 ? "+" : ""}$sIncreaseRate%";
     String sIncrease = getData(FieldIndex.indexIncrease.index);
     sIncrease = "${increase >= 0 ? "+" : ""}$sIncrease";
 
     return Container(
+      key: Key(code),
       height: 74,
 
       margin: const EdgeInsets.only(left: 5, right: 5),
       child: Card(
         // color: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
         color: selected
             ? const Color.fromARGB(255, 227, 243, 243)
             : Colors.white,
@@ -222,6 +224,14 @@ class Stock {
                     sIncrease,
                     // getData(FieldIndex.indexIncrease.index),
                     style: TextStyle(fontSize: 18, color: color),
+                  ),
+                  ReorderableDragStartListener(
+                    index: index,
+                    child: Icon(
+                      Icons.drag_handle,
+                      size: 24,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
                 ],
               ),

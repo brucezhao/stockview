@@ -545,7 +545,7 @@ class _HomePageState extends State<HomePage> {
           children: [
             stockIndexsWidget(),
             Expanded(
-              child: ListView.separated(
+              /*child: ListView.separated(
                 itemBuilder: (context, index) {
                   int stockIndex = index + 3;
                   if (stocks.length <= stockIndex) {
@@ -578,6 +578,63 @@ class _HomePageState extends State<HomePage> {
                 },
                 itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
                 shrinkWrap: true,
+              ),*/
+              child: ReorderableListView.builder(
+                shrinkWrap: true,
+                buildDefaultDragHandles: false,
+                itemBuilder: (context, index) {
+                  int stockIndex = index + 3;
+                  if (stocks.length <= stockIndex) {
+                    return Container();
+                  }
+                  bool isCurrent = stockIndex == currentIndex;
+
+                  return stocks[stockIndex].briefWidget(
+                    //index + 3 == currentIndex,
+                    isCurrent,
+                    index,
+                    () async {
+                      if (isCurrent) {
+                        currentIndex = -1;
+                        isFold = true;
+                        Size size = await windowManager.getSize();
+                        windowManager.setSize(
+                          Size(size.width - 450, size.height),
+                          animate: true,
+                        );
+                      } else {
+                        currentIndex = index;
+                        showStockDetail(index + 3);
+                      }
+                      setState(() {});
+                    },
+                  );
+                },
+                itemCount: stocks.length > 3 ? stocks.length - 3 : 0,
+                onReorder: (int oldIndex, int newIndex) {
+                  oldIndex += 3;
+                  newIndex += 3;
+                  if (oldIndex < newIndex) {
+                    newIndex -= 1;
+                  }
+                  final Stock stock = stocks.removeAt(oldIndex);
+                  stocks.insert(newIndex, stock);
+
+                  String stockCode = stockCodes.removeAt(oldIndex);
+                  stockCodes.insert(newIndex, stockCode);
+
+                  dataSaver.saveStockCodes(stockCodes);
+
+                  setState(() {});
+                },
+                proxyDecorator: (child, index, animation) {
+                  return Material(
+                    elevation: 0,
+                    color: Colors.transparent,
+                    // shadowColor: Colors.black,
+                    child: child,
+                  );
+                },
               ),
             ),
           ],
@@ -613,6 +670,7 @@ class _HomePageState extends State<HomePage> {
                     );
                     setState(() {
                       isFold = true;
+                      currentIndex = -1;
                     });
                   },
                   icon: Icon(Icons.navigate_before, size: 32),

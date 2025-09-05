@@ -3,7 +3,7 @@ import 'package:window_manager/window_manager.dart';
 
 import 'pages/home_page.dart';
 
-const String appTitle = "股票查看器 v1.0";
+const String appTitle = "股票查看器 v1.1";
 // SysTray sysTray = SysTray();
 
 void main() async {
